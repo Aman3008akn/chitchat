@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Gilroy:wght@700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ChitChat Luxury Theme */
+
+@layer base {
+  :root {
+    /* AMOLED Dark Theme */
+    --background: 0 0% 0%; /* True black */
+    --foreground: 210 20% 98%;
+    
+    /* Chat Interface */
+    --chat-background: 0 0% 4%;
+    --chat-surface: 225 12% 12%;
+    --chat-surface-hover: 225 12% 15%;
+    
+    /* Message Bubbles */
+    --message-user: 142 76% 36%;
+    --message-user-foreground: 210 20% 98%;
+    --message-ai: 225 12% 12%;
+    --message-ai-foreground: 210 20% 98%;
+    
+    /* Sidebar */
+    --sidebar: 0 0% 2%;
+    --sidebar-surface: 225 12% 8%;
+    --sidebar-surface-hover: 225 12% 12%;
+    --sidebar-border: 225 12% 18%;
+    
+    /* Accent Colors (Green + Gold) */
+    --primary: 142 76% 45%;
+    --primary-foreground: 210 20% 98%;
+    --primary-glow: 50 100% 50%;
+    
+    --secondary: 225 12% 20%;
+    --secondary-foreground: 210 20% 98%;
+    
+    /* Interactive Elements */
+    --accent: 225 12% 16%;
+    --accent-foreground: 210 20% 98%;
+    --accent-hover: 225 12% 20%;
+    
+    /* Form Elements */
+    --input: 225 12% 16%;
+    --input-border: 225 12% 24%;
+    --input-focus: 142 76% 45%;
+    
+    /* States */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+    
+    --muted: 225 12% 16%;
+    --muted-foreground: 210 10% 65%;
+    
+    --border: 225 12% 18%;
+    --ring: 142 76% 45%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-surface: linear-gradient(145deg, hsl(var(--chat-surface)), hsl(var(--accent)));
+    --gradient-glow: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary-glow) / 0.1));
+    
+    /* Shadows */
+    --shadow-glow: 0 0 25px hsl(var(--primary) / 0.25);
+    --shadow-surface: 0 4px 20px hsl(0 0% 0% / 0.7);
+    
+    /* Animation */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    --radius: 16px;
+  }
+
+  .light {
+    /* Light theme can be a variation of the luxury theme */
+    --background: 0 0% 98%;
+    --foreground: 224 71% 4%;
+    
+    /* Chat Interface */
+    --chat-background: 0 0% 95%;
+    --chat-surface: 0 0% 100%;
+    --chat-surface-hover: 210 40% 96%;
+    
+    /* Message Bubbles */
+    --message-user: 142 76% 45%;
+    --message-user-foreground: 0 0% 100%;
+    --message-ai: 0 0% 100%;
+    --message-ai-foreground: 224 71% 4%;
+    
+    /* Sidebar */
+    --sidebar: 0 0% 97%;
+    --sidebar-surface: 0 0% 100%;
+    --sidebar-surface-hover: 210 40% 96%;
+    --sidebar-border: 214 32% 91%;
+    
+    /* Accent Colors */
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 50 100% 50%;
+    
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 224 71% 4%;
+    
+    /* Interactive Elements */
+    --accent: 210 40% 96%;
+    --accent-foreground: 224 71% 4%;
+    --accent-hover: 210 40% 90%;
+    
+    /* Form Elements */
+    --input: 0 0% 100%;
+    --input-border: 214 32% 91%;
+    --input-focus: 142 76% 45%;
+    
+    /* States */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    
+    --border: 214 32% 91%;
+    --ring: 142 76% 45%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-surface: linear-gradient(145deg, hsl(var(--chat-surface)), hsl(var(--accent)));
+    --gradient-glow: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary-glow) / 0.1));
+    
+    /* Shadows */
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.15);
+    --shadow-surface: 0 4px 20px hsl(0 0% 0% / 0.08);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--chat-background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--sidebar-border));
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent));
+  }
+}
+
+@layer utilities {
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+  
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+
+  /* Glassmorphism */
+  .glassmorphism {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Fade-in slide animation */
+  @keyframes fade-in-slide {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Wave animation */
+  @keyframes wave {
+    0%, 40%, 100% {
+      transform: scaleY(0.4);
+    }
+    20% {
+      transform: scaleY(1);
+    }
+  }
+}

@@ -1,0 +1,55 @@
+import { useState, useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "./components/ThemeProvider";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import Intro from "./components/Intro";
+
+const queryClient = new QueryClient();
+
+const App = () => {
+  const [showIntro, setShowIntro] = useState(true);
+  const [introVisible, setIntroVisible] = useState(true);
+
+  useEffect(() => {
+    const fadeTimer = setTimeout(() => {
+      setShowIntro(false);
+    }, 5000);
+
+    const removeTimer = setTimeout(() => {
+      setIntroVisible(false);
+    }, 6000); // 1s for fade-out transition
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark">
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          {introVisible && <Intro show={showIntro} />}
+          {!introVisible && (
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          )}
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
+
+export default App;
