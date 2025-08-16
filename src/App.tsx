@@ -8,14 +8,30 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Intro from "./components/Intro";
+import { Maintenance } from "./components/Maintenance";
+import { configService } from "./services/configService";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [showIntro, setShowIntro] = useState(true);
   const [introVisible, setIntroVisible] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
 
   useEffect(() => {
+    // Start UI config auto-refresh
+    configService.startAutoRefresh();
+
+    // Fetch maintenance status from public/maintenance.json
+    fetch('/maintenance.json')
+      .then(res => res.json())
+      .then(data => {
+        setMaintenanceMode(data.isMaintenance);
+        setMaintenanceMessage(data.message);
+      })
+      .catch(error => console.error('Error fetching maintenance status:', error));
+
     const fadeTimer = setTimeout(() => {
       setShowIntro(false);
     }, 5000);
@@ -29,6 +45,10 @@ const App = () => {
       clearTimeout(removeTimer);
     };
   }, []);
+
+  if (maintenanceMode) {
+    return <Maintenance message={maintenanceMessage} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

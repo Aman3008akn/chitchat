@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Sparkles, Code, BookOpen, Lightbulb, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useUIConfig } from '@/hooks/useUIConfig';
 
 interface WelcomeScreenProps {
   onSendMessage: (message: string) => void;
@@ -33,6 +34,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onSendMessage,
   onNewChat
 }) => {
+  const { config } = useUIConfig();
   const [prompts, setPrompts] = useState(() => shuffleAndPick(allPrompts, 3));
 
   useEffect(() => {
@@ -54,14 +56,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <MessageSquare className="h-10 w-10 text-white" />
           </div>
           <h1 className="text-5xl font-display font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Welcome to ChitChat
+            Welcome to {config?.branding.appName || 'ChitChat'}
           </h1>
           <p className="text-xl text-muted-foreground mb-2 max-w-2xl mx-auto">
             Your intelligent AI assistant.
           </p>
-          <p className="text-sm font-sans text-muted-foreground mb-8">
-            (Designed By Aman Shukla)
-          </p>
+          {config?.branding.showBranding && (
+            <p className="text-sm font-sans text-muted-foreground mb-8">
+              {config?.branding.tagline || '(Designed By Aman Shukla)'}
+            </p>
+          )}
         </div>
 
         {/* Example Prompts Grid */}
@@ -81,14 +85,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-smooth">
                   <example.icon className="h-5 w-5 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold font-display text-foreground mb-1">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold font-display text-foreground mb-1 break-words">
                     {example.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-sm text-muted-foreground mb-2 break-words">
                     {example.description}
                   </p>
-                  <p className="text-sm text-primary font-medium">
+                  <p className="text-sm text-primary font-medium break-words">
                     "{example.prompt}"
                   </p>
                 </div>

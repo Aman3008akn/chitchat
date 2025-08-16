@@ -23,7 +23,7 @@ export class ChatService {
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
       // Format conversation history
       const history = conversationHistory.map(msg => ({
@@ -56,7 +56,7 @@ export class ChatService {
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
       const history = conversationHistory.map(msg => ({
         role: msg.role === 'assistant' ? 'model' : 'user',

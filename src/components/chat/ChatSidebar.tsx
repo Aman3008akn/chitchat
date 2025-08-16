@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 import { SettingsContent } from './SettingsContent';
 import { Conversation } from '@/types/chat';
+import { useUIConfig } from '@/hooks/useUIConfig';
 
 interface ChatSidebarProps {
   className?: string;
@@ -24,6 +25,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   setCurrentConversation,
   deleteConversation,
 }) => {
+  const { config } = useUIConfig();
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
   const handleNewChat = () => {
@@ -43,11 +45,14 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   return (
     <div className={cn(
-      "bg-sidebar border-r border-sidebar-border flex flex-col h-full",
+      "bg-sidebar flex flex-col h-full",
       className
-    )}>
+    )} style={{
+      backgroundColor: 'var(--config-surface)',
+      borderColor: 'var(--config-border)',
+    }}>
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="p-4 border-b" style={{ borderColor: 'var(--config-border)' }}>
         <Button
           onClick={handleNewChat}
           className="w-full justify-start glassmorphism hover:bg-white/10 text-foreground border-white/20 transition-smooth"

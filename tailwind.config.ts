@@ -23,22 +23,22 @@ export default {
 		},
 		extend: {
 			colors: {
-				border: 'hsl(var(--border))',
+				border: 'var(--config-border)',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				background: 'var(--config-background)',
+				foreground: 'var(--config-text)',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
+					DEFAULT: 'var(--config-primary)',
 					foreground: 'hsl(var(--primary-foreground))',
 					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
+					DEFAULT: 'var(--config-secondary)',
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
 				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
+					DEFAULT: 'var(--config-error)',
 					foreground: 'hsl(var(--destructive-foreground))'
 				},
 				muted: {
@@ -46,13 +46,13 @@ export default {
 					foreground: 'hsl(var(--muted-foreground))'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
+					DEFAULT: 'var(--config-accent)',
 					foreground: 'hsl(var(--accent-foreground))',
 					hover: 'hsl(var(--accent-hover))'
 				},
 				chat: {
-					background: 'hsl(var(--chat-background))',
-					surface: 'hsl(var(--chat-surface))',
+					background: 'var(--config-background)',
+					surface: 'var(--config-surface)',
 					'surface-hover': 'hsl(var(--chat-surface-hover))'
 				},
 				message: {
@@ -62,10 +62,10 @@ export default {
 					'ai-foreground': 'hsl(var(--ai-message-foreground))'
 				},
 				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
+					DEFAULT: 'var(--config-surface)',
 					surface: 'hsl(var(--sidebar-surface))',
 					'surface-hover': 'hsl(var(--sidebar-surface-hover))',
-					border: 'hsl(var(--sidebar-border))'
+					border: 'var(--config-border)'
 				}
 			},
 			backgroundImage: {

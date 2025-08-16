@@ -2,10 +2,11 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, User, Bot, RotateCcw } from 'lucide-react';
+import { Copy, Check, User, Bot, RotateCcw, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
+import { useUIConfig } from '@/hooks/useUIConfig';
 
 interface MessageBubbleProps {
   message: Message;
@@ -20,6 +21,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   onRegenerate,
   canRegenerate = false
 }) => {
+  const { config } = useUIConfig();
   const [isCopied, setIsCopied] = React.useState(false);
 
   const handleCopy = async () => {
@@ -43,8 +45,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
         isUser 
           ? "bg-gradient-primary text-white shadow-glow" 
-          : "bg-chat-surface border border-sidebar-border"
-      )}>
+          : "bg-chat-surface border"
+      )} style={{
+        backgroundColor: isUser ? 'var(--config-primary)' : 'var(--config-surface)',
+        borderColor: 'var(--config-border)',
+      }}>
         {isUser ? (
           <User className="h-5 w-5" />
         ) : (
@@ -55,7 +60,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {/* Message Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="text-md font-semibold font-display text-foreground">
+          <div className="text-md font-semibold font-display text-foreground break-words">
             {isUser ? 'You' : 'ChitChat AI'}
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -87,10 +92,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
 
         <div className={cn(
-          "prose prose-invert prose-sm max-w-none glassmorphism p-4 rounded-lg border border-white/10",
+          "prose prose-invert prose-sm max-w-none break-words glassmorphism p-4 rounded-lg border",
           isUser ? "bg-message-user/10" : "bg-message-ai/10",
           isStreaming && "animate-pulse"
-        )}>
+        )} style={{
+          borderColor: 'var(--config-border)',
+          backgroundColor: isUser ? 'rgba(var(--config-primary-rgb), 0.1)' : 'rgba(var(--config-surface-rgb), 0.5)',
+        }}>
           <ReactMarkdown
             components={{
               code({ className, children, ...props }) {
@@ -158,6 +166,27 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           >
             {message.content}
           </ReactMarkdown>
+          {message.attachment && (
+            <div className="mt-2">
+              {message.attachment.type.startsWith('image/') ? (
+                <img
+                  src={message.attachment.url}
+                  alt={message.attachment.name}
+                  className="max-w-xs max-h-64 rounded-lg object-cover"
+                />
+              ) : (
+                <a
+                  href={message.attachment.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background/70 transition-colors border border-white/10"
+                >
+                  <FileText className="h-6 w-6 text-primary" />
+                  <span className="text-sm font-medium truncate">{message.attachment.name}</span>
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         {isStreaming && (

@@ -1,0 +1,24 @@
+[build]
+  functions = "netlify/functions"
+
+[build.processing.html]
+  pretty_urls = false
+
+[build.processing.js]
+  minify = false
+
+[build.processing.css]
+  minify = false
+
+[[headers]]
+  for = "/.netlify/functions/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  included_files = ["ui-config.json"]

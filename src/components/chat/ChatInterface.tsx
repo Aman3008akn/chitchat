@@ -9,11 +9,20 @@ import { useChatStore } from '@/hooks/useChatStore';
 import { ChatService } from '@/services/chat';
 import { Message } from '@/types/chat';
 import { useToast } from '@/hooks/use-toast';
+import * as pdfjsLib from 'pdfjs-dist';
 import { AlertCircle } from 'lucide-react';
+import { createWorker } from 'tesseract.js';
+
+// Set up the worker source for pdf.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { MobileHeader } from './MobileHeader';
+import { useUIConfig } from '@/hooks/useUIConfig';
+import { Skeleton } from '../ui/skeleton';
 
 export const ChatInterface: React.FC = () => {
+  const { config, isLoading: isConfigLoading } = useUIConfig();
   const {
     conversations,
     currentConversationId,
@@ -49,7 +58,25 @@ export const ChatInterface: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentConversation?.messages, streamingMessageId]);
 
-  const handleSendMessage = async (content: string) => {
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const readFileAsArrayBuffer = (file: File): Promise<ArrayBuffer> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  const handleSendMessage = async (content: string, file?: File) => {
     let conversationId = currentConversationId;
 
     // Create new conversation if none selected
@@ -57,18 +84,62 @@ export const ChatInterface: React.FC = () => {
       conversationId = createNewConversation();
     }
 
+    let fileContent = '';
+    let attachment;
+
+    if (file) {
+      try {
+        const fileUrl = await readFileAsBase64(file);
+        attachment = { name: file.name, type: file.type, url: fileUrl };
+
+        if (file.type.startsWith('image/')) {
+          const worker = await createWorker('eng');
+          const { data: { text } } = await worker.recognize(fileUrl);
+          fileContent = `[Image Content: ${text}]`;
+          await worker.terminate();
+        } else if (file.type === 'application/pdf') {
+          const fileBuffer = await readFileAsArrayBuffer(file);
+          const pdf = await pdfjsLib.getDocument(fileBuffer).promise;
+          let text = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            text += textContent.items.map(item => (item as any).str).join(' ');
+          }
+          fileContent = `[PDF Content: ${text}]`;
+        }
+      } catch (error) {
+        console.error("Error processing file:", error);
+        toast({
+          title: "File Error",
+          description: "Could not process the attached file.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const fullContent = content + (fileContent ? `\n\n${fileContent}` : '');
+
     // Add user message
     const userMessage: Message = {
       id: uuidv4(),
-      content,
+      content: content,
       role: 'user',
       timestamp: new Date(),
+      attachment,
     };
     addMessage(conversationId, userMessage);
 
-    // Custom response for "Who created ChitChat?"
-    if (content.trim().toLowerCase() === "who created chitchat?") {
-      const customResponse = "ChitChat is a large language model, meticulously crafted by Aman Shukla and a dedicated team of engineers. It's designed to be a helpful and creative AI assistant, ready to assist you with a wide range of tasks from coding to brainstorming.";
+    // Custom response for owner/creator questions
+    const ownerKeywords = [
+      'who made you', 'who created you', 'who built you', 'who developed you', 'who owns you',
+      'your founder', 'your creator', 'your developer', 'your owner', 'made by who', 'created by who',
+      'built by who', 'kisne banaya', 'kisne create kiya', 'kisne develop kiya', 'kisne banayi',
+      'kisne design kiya', 'tumhe kisne banaya', 'tumhare malik kaun hai', 'kisne banaya tumhe'
+    ];
+    if (ownerKeywords.some(keyword => fullContent.trim().toLowerCase().includes(keyword))) {
+      const customResponse = "👉 “I am a large language model, created by Aman Shukla and some engineers.”";
       const aiMessage: Message = {
         id: uuidv4(),
         content: customResponse,
@@ -106,13 +177,13 @@ export const ChatInterface: React.FC = () => {
 
       // Stream response
       let fullResponse = '';
-      for await (const chunk of chatService.sendMessageStream(content, history)) {
+      for await (const chunk of chatService.sendMessageStream(fullContent, history)) {
         if (abortControllerRef.current?.signal.aborted) {
           break;
         }
         
         fullResponse += chunk;
-        updateMessage(conversationId, aiMessageId, fullResponse);
+        updateMessage(conversationId, aiMessageId, replaceGoogleWithAmanShukla(fullResponse));
       }
 
       toast({
@@ -137,6 +208,11 @@ export const ChatInterface: React.FC = () => {
       setStreamingMessageId(null);
       abortControllerRef.current = null;
     }
+  };
+
+  // Function to replace "Google" with "Aman Shukla" in AI responses
+  const replaceGoogleWithAmanShukla = (text: string): string => {
+    return text.replace(/Google/gi, 'Aman Shukla');
   };
 
   const handleStopGeneration = () => {
@@ -202,7 +278,7 @@ export const ChatInterface: React.FC = () => {
         }
         
         fullResponse += chunk;
-        updateMessage(currentConversationId, aiMessageId, fullResponse);
+        updateMessage(currentConversationId, aiMessageId, replaceGoogleWithAmanShukla(fullResponse));
       }
 
       toast({
@@ -229,13 +305,40 @@ export const ChatInterface: React.FC = () => {
 
   const isMobile = useIsMobile();
 
+  if (isConfigLoading) {
+    return (
+      <div className="flex h-screen bg-chat-background">
+        <div className="w-80 border-r border-sidebar-border p-4 space-y-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+        </div>
+        <div className="flex-1 flex flex-col p-4">
+          <div className="flex-1 space-y-4">
+            <Skeleton className="h-16 w-1/2 self-end" />
+            <Skeleton className="h-24 w-3/4" />
+            <Skeleton className="h-16 w-1/2 self-end" />
+          </div>
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen bg-chat-background">
+    <div className="flex h-screen bg-chat-background" style={{
+      backgroundColor: 'var(--config-background)',
+      color: 'var(--config-text)',
+    }}>
       {/* Sidebar */}
       <div className={cn(
-        "w-80 border-r border-sidebar-border",
+        "border-r",
         isMobile && "hidden"
-      )}>
+      )} style={{
+        width: 'var(--config-sidebar-width)',
+        borderColor: 'var(--config-border)',
+      }}>
         <ChatSidebar
           conversations={conversations}
           currentConversationId={currentConversationId}
@@ -247,6 +350,13 @@ export const ChatInterface: React.FC = () => {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
+        <MobileHeader
+          conversations={conversations}
+          currentConversationId={currentConversationId}
+          createNewConversation={createNewConversation}
+          setCurrentConversation={setCurrentConversation}
+          deleteConversation={deleteConversation}
+        />
         {currentConversation ? (
           <>
             {/* Messages */}
@@ -277,8 +387,12 @@ export const ChatInterface: React.FC = () => {
 
             {/* Error Display */}
             {error && (
-              <div className="border-t border-sidebar-border bg-destructive/10 px-6 py-3">
-                <div className="flex items-center gap-2 text-destructive">
+              <div className="border-t bg-destructive/10 px-6 py-3" style={{
+                borderColor: 'var(--config-border)',
+                backgroundColor: 'var(--config-error-bg)',
+                color: 'var(--config-error)',
+              }}>
+                <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
                   <span className="text-sm">{error}</span>
                 </div>
@@ -295,7 +409,7 @@ export const ChatInterface: React.FC = () => {
           </>
         ) : (
           /* Welcome Screen */
-          <WelcomeScreen 
+          <WelcomeScreen
             onSendMessage={handleSendMessage}
             onNewChat={handleStartNewChat}
           />
